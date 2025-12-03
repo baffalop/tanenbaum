@@ -6,15 +6,15 @@ module Cli = struct
   module Terms = struct
     let year =
       let doc = "Run problems from year $(docv)." in
-      Arg.(value & opt (some int) None & info [ "year"; "y" ] ~docv:"YEAR" ~doc)
+      Arg.(required & opt (some int) None & info [ "year"; "y" ] ~docv:"YEAR" ~doc)
 
     let day =
       let doc = {|Run problem number "day" $(docv).|} in
-      Arg.(value & opt (some int) None & info [ "day"; "d" ] ~docv:"DAY" ~doc)
+      Arg.(required & opt (some int) None & info [ "day"; "d" ] ~docv:"DAY" ~doc)
 
     let part =
       let doc = "Run problem part $(docv)." in
-      Arg.(value & opt (some int) None & info [ "part"; "p" ] ~docv:"PART" ~doc)
+      Arg.(required & opt (some int) None & info [ "part"; "p" ] ~docv:"PART" ~doc)
 
     let auth_token =
       let doc =
@@ -34,42 +34,36 @@ module Cli = struct
       Arg.(value & flag & info [ "submit"; "s" ] ~docv:"SUBMIT" ~doc)
   end
 
-  let run (year : int option) (day : int option) (part : int option)
+  let run (year : int) (day : int) (part : int)
       (auth_token : string option) (submit : bool) : unit Cmdliner.Term.ret =
-    match (year, day, part) with
-    | None, _, _ -> `Error (false, {|"year" argument required.|})
-    | _, None, _ -> `Error (false, {|"day" argument required.|})
-    | _, _, None -> `Error (false, {|"part" argument required.|})
-    | Some year, Some day, Some part -> (
-        let output =
-          let@ (run_mode : Problem_runner.Run_mode.t) =
-            match (auth_token, submit) with
-            | None, true ->
-                Error {|Must provide AUTH_TOKEN when using --submit|}
-            | token, false ->
-                Ok
-                  (Problem_runner.Run_mode.Test_from_puzzle_input
-                     {
-                       credentials =
-                         Option.map Problem_runner.Credentials.of_auth_token
-                           token;
-                     })
-            | Some token, true ->
-                Ok
-                  (Problem_runner.Run_mode.Submit
-                     {
-                       credentials =
-                         Problem_runner.Credentials.of_auth_token token;
-                     })
-          in
-          Problem_runner.(run { year; day; part; run_mode })
+      let output =
+        let@ (run_mode : Problem_runner.Run_mode.t) =
+          match (auth_token, submit) with
+          | None, true ->
+              Error {|Must provide AUTH_TOKEN when using --submit|}
+          | token, false ->
+              Ok
+                (Problem_runner.Run_mode.Test_from_puzzle_input
+                    {
+                      credentials =
+                        Option.map Problem_runner.Credentials.of_auth_token
+                          token;
+                    })
+          | Some token, true ->
+              Ok
+                (Problem_runner.Run_mode.Submit
+                    {
+                      credentials =
+                        Problem_runner.Credentials.of_auth_token token;
+                    })
         in
-
-        match output with
-        | Ok output ->
-            print_endline output;
-            `Ok ()
-        | Error error_msg -> `Error (false, error_msg))
+        Problem_runner.(run { year; day; part; run_mode })
+      in
+      match output with
+      | Ok output ->
+          print_endline output;
+          `Ok ()
+      | Error error_msg -> `Error (false, error_msg)
 
   let main () =
     let info = Cmd.info "tanenbaum" in
