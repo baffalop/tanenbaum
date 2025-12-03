@@ -6,15 +6,15 @@ module Cli = struct
   module Terms = struct
     let year =
       let doc = "Run problems from year $(docv)." in
-      Arg.(value & opt (some int) None & info [ "year" ] ~docv:"YEAR" ~doc)
+      Arg.(value & opt (some int) None & info [ "year"; "y" ] ~docv:"YEAR" ~doc)
 
     let day =
       let doc = {|Run problem number "day" $(docv).|} in
-      Arg.(value & opt (some int) None & info [ "day" ] ~docv:"DAY" ~doc)
+      Arg.(value & opt (some int) None & info [ "day"; "d" ] ~docv:"DAY" ~doc)
 
     let part =
       let doc = "Run problem part $(docv)." in
-      Arg.(value & opt (some int) None & info [ "part" ] ~docv:"PART" ~doc)
+      Arg.(value & opt (some int) None & info [ "part"; "p" ] ~docv:"PART" ~doc)
 
     let auth_token =
       let doc =
@@ -31,7 +31,7 @@ module Cli = struct
       let doc =
         "If set, attempts to submit the problem output to adventofcode.com."
       in
-      Arg.(value & flag & info [ "submit" ] ~docv:"SUBMIT" ~doc)
+      Arg.(value & flag & info [ "submit"; "s" ] ~docv:"SUBMIT" ~doc)
   end
 
   let run (year : int option) (day : int option) (part : int option)
