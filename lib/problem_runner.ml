@@ -47,25 +47,15 @@ module Run_mode = struct
       | None ->
           Error "Cannot fetch input from adventofcode.com: missing credentials."
       | Some credentials ->
-          Result.map_error Piaf.Error.to_string
+          Result.map_error (fun (code, msg) ->
+            Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
           @@ Eio_main.run
           @@ fun env ->
           Eio.Switch.run
           @@ fun sw ->
-          let uri =
-            Uri.of_string
-            @@ String.concat "/"
-                 [
-                   "https://adventofcode.com";
-                   string_of_int year;
-                   "day";
-                   string_of_int day;
-                   "input";
-                 ]
-          in
+          let url = Printf.sprintf "https://adventofcode.com/%d/day/%d/input" year day in
           let headers = Credentials.to_headers credentials in
-          let@ response = Piaf.Client.Oneshot.get ~sw env ~headers uri in
-          let@ body = Piaf.Body.to_string response.body in
+          let@ { body } = Ezcurl.get ~url ~headers () in
           write_file filename body;
           Result.ok body
 
@@ -80,32 +70,19 @@ module Run_mode = struct
     match run_mode with
     | Test_from_puzzle_input _ -> Ok None
     | Submit { credentials } ->
-        Result.map_error Piaf.Error.to_string
+        Result.map_error (fun (code, msg) ->
+          Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
         @@ Eio_main.run
         @@ fun env ->
         Eio.Switch.run
         @@ fun sw ->
-        let uri =
-          Uri.of_string
-          @@ String.concat "/"
-               [
-                 "https://adventofcode.com";
-                 string_of_int year;
-                 "day";
-                 string_of_int day;
-                 "answer";
-               ]
+        let url = Printf.sprintf "https://adventofcode.com/%d/day/%d/answer" year day in
+        let headers = Credentials.to_headers credentials
+          @ [ ("Content-Type", "application/x-www-form-urlencoded") ]
         in
-        let headers = Credentials.to_headers credentials in
-        let headers =
-          headers @ [ ("Content-Type", "application/x-www-form-urlencoded") ]
-        in
-        let body =
-          Piaf.Body.of_string @@ Fmt.(str "level=%d&answer=%s" part output)
-        in
-        let@ response = Piaf.Client.Oneshot.post ~sw env ~headers ~body uri in
-        let@ body = Piaf.Body.to_string response.body in
-        Result.ok (Some body)
+        let content = `String (Printf.sprintf "level=%d&answer=%s" part output) in
+        let@ res = Ezcurl.post ~url ~headers ~content ~params:[] () in
+        Result.ok @@ failwith "todo"
 end
 
 module Options = struct
