@@ -53,6 +53,7 @@ module Run_mode = struct
           let headers = Credentials.to_headers credentials in
           let@ { body } = Ezcurl.get ~url ~headers () in
           write_file filename body;
+          Printf.printf "Got input; wrote to %s\n" filename;
           Result.ok body
 
   let get_input (year : int) (day : int) : t -> (string, string) result =
