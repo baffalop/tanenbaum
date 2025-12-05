@@ -15,6 +15,7 @@ end
 
 module Run_mode = struct
   type t =
+    | Example of { input : string option }
     | Test_from_puzzle_input of { credentials : Credentials.t option }
     | Submit of { credentials : Credentials.t }
 
@@ -29,13 +30,28 @@ module Run_mode = struct
     let () = output_string ch contents in
     close_out ch
 
-  let get_puzzle_input (year : int) (day : int)
-      (credentials : Credentials.t option) : (string, string) result =
-    (* Create cache directory structure *)
+  let init_cache (year : int) : string =
     if not (Sys.file_exists "inputs") then Sys.mkdir "inputs" 0o777;
     let year_dir = Filename.concat "inputs" @@ string_of_int year in
     if not (Sys.file_exists year_dir) then Sys.mkdir year_dir 0o777;
+    year_dir
 
+  let get_example_input ~year:(year : int) ~day:(day : int) (input : string option) : (string, string) result =
+    let year_dir = init_cache year in
+    let filename = Filename.concat year_dir @@ Format.sprintf "%02d-ex.txt" day in
+    match input with
+    | Some input -> (
+      write_file filename input;
+      Ok input
+    )
+    | None ->
+      if Sys.file_exists filename then Ok (read_file filename)
+      else Error "No example input in cache: please pass in via stdin"
+
+  let get_puzzle_input (year : int) (day : int)
+      (credentials : Credentials.t option) : (string, string) result =
+    (* Create cache directory structure *)
+    let year_dir = init_cache year in
     (* Check if cached input exists *)
     let filename = Filename.concat year_dir @@ Format.sprintf "%02d.txt" day in
     if Sys.file_exists filename then Ok (read_file filename)
@@ -58,6 +74,7 @@ module Run_mode = struct
 
   let get_input (year : int) (day : int) : t -> (string, string) result =
     function
+    | Example { input } -> get_example_input ~year ~day input
     | Test_from_puzzle_input { credentials } ->
         get_puzzle_input year day credentials
     | Submit { credentials } -> get_puzzle_input year day (Some credentials)
@@ -65,7 +82,7 @@ module Run_mode = struct
   let cleanup (year : int) (day : int) (part : int) (output : string)
       (run_mode : t) : (string option, string) result =
     match run_mode with
-    | Test_from_puzzle_input _ -> Ok None
+    | Test_from_puzzle_input _ | Example _ -> Ok None
     | Submit { credentials } ->
         Result.map_error (fun (code, msg) ->
           Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
