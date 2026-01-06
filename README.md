@@ -1,8 +1,6 @@
-**_Tanenbaum_**
+# Tanenbaum
 
-![Tanenbaum logo](https://github.com/Sixstring982/tanenbaum/blob/main/public/logo.webp?raw=true "Tanenbaum logo")
-
-# Summary
+<img src="public/logo-2.png" alt="Tanenbaum logo" width="150">
 
 _Tanenbaum_ is an OCaml starter project for Advent of Code.
 
@@ -73,14 +71,16 @@ export AUTH_TOKEN="5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 > [!TIP]
 > If you don't want to configure authentication, you will manually need to create your input directories and files.
 > This can be done by creating the following directory structure from the project root:
-> ```shell 
+>
+> ```shell
 > $ mkdir inputs/{year}/{day}.txt
 > ```
+>
 > where Day 01 of 2023 would look like:
-> ```shell 
+>
+> ```shell
 > $ mkdir inputs/2023/01.txt
 > ```
-
 
 ## Working on problems
 
@@ -93,7 +93,6 @@ compute the puzzle output from puzzle input.
 _Tanenbaum_ will automatically register `.ml` or `.re` files in `lib/problems` which start
 with `problem` -- e.g. `lib/problems/problem_2023_01.ml` or `lib/problems/problem_2023_01.re`.
 Once you've added a file of this form, you can run it from the CLI.
-
 
 For example, if we'd like to start working on day 1 of year 2023, _Tanenbaum_
 will automatically we can add this file:
@@ -135,7 +134,6 @@ module Part_2 = {
 > [!TIP]
 > You can organize your problems in subdirectories, e.g. `lib/problems/2023/problem_2023_01.ml`. However, the file name must still have the form `problem_{year}_{day}.{ml,re}`.
 
-
 > [!TIP]
 > It's also helpful to add a `.mli` or `.rei` file, which gives the compiler more
 > information about which parts of your code are unused and can therefore be
@@ -168,14 +166,14 @@ $ dune exec --watch bin/main.exe -- \
   --day=1 \
   --part=1
 
-  # output 
+  # output
   your_answer
 ```
 
 ### Submitting answers
 
 Once you're convinced that your problem produces the correct output, you can
-either copy and paste your solution into the answer form on `adventofcode.com`, 
+either copy and paste your solution into the answer form on `adventofcode.com`,
 or you can also submit your answer using the CLI via the `--submit` flag.
 
 > [!WARNING]
