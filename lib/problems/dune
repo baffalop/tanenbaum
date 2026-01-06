@@ -2,7 +2,7 @@
  (target all.ml)
  (deps
   (:problem_files
-   (glob_files_rec "problem*{[!r][!e].ml,.re}"))
+   (glob_files_rec "problem*{[!.]??.ml,.re}"))
   (:generator generator/gen.exe))
  (action
   (run %{generator} %{target} %{problem_files})))
