@@ -1,12 +1,16 @@
 open Import
 
-module Credentials = struct
+module Credentials: sig
+  type t
+
+  val of_auth_token : string -> t
+  val to_headers : t -> (string * string) list
+end = struct
   type t = string
 
   let of_auth_token (x : string) : t = x
 
-  let to_headers (t : t) : (string * string) list =
-    [ ("Cookie", "session=" ^ t) ]
+  let to_headers (t : t) : (string * string) list = [ ("Cookie", "session=" ^ t) ]
 end
 
 module Run_mode = struct
@@ -28,20 +32,14 @@ module Run_mode = struct
   let get_puzzle_input (year : int) (day : int)
       (credentials : Credentials.t option) : (string, string) result =
     (* Create cache directory structure *)
-    let () =
-      if not (Sys.file_exists "inputs") then Sys.mkdir "inputs" 0o777 else ()
-    in
+    if not (Sys.file_exists "inputs") then Sys.mkdir "inputs" 0o777;
     let year_dir = Filename.concat "inputs" @@ string_of_int year in
-    let () =
-      if not (Sys.file_exists year_dir) then Sys.mkdir year_dir 0o777 else ()
-    in
+    if not (Sys.file_exists year_dir) then Sys.mkdir year_dir 0o777;
 
     (* Check if cached input exists *)
-    let filename =
-      Filename.concat year_dir @@ Format.sprintf "%02d.txt" day
-    in
+    let filename = Filename.concat year_dir @@ Format.sprintf "%02d.txt" day in
     if Sys.file_exists filename then Ok (read_file filename)
-      (* If not, fetch it from adventofcode.com *)
+    (* If not, fetch it from adventofcode.com *)
     else
       match credentials with
       | None ->
@@ -49,10 +47,8 @@ module Run_mode = struct
       | Some credentials ->
           Result.map_error (fun (code, msg) ->
             Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
-          @@ Eio_main.run
-          @@ fun env ->
-          Eio.Switch.run
-          @@ fun sw ->
+          @@ Eio_main.run @@ fun env ->
+          Eio.Switch.run @@ fun sw ->
           let url = Printf.sprintf "https://adventofcode.com/%d/day/%d/input" year day in
           let headers = Credentials.to_headers credentials in
           let@ { body } = Ezcurl.get ~url ~headers () in
@@ -113,10 +109,7 @@ let find_problem (year : int) (day : int) :
       Problems.All.all
   with
   | Some p -> Ok p
-  | None ->
-      Error
-        (Format.sprintf "Problem (year = %d, day = %d) not implemented."
-           year day)
+  | None -> Error (Format.sprintf "Problem (year = %d, day = %d) not implemented." year day)
 
 let run (options : Options.t) : (string, string) result =
   let@ problem = find_problem options.year options.day in
