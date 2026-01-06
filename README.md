@@ -2,7 +2,7 @@
 
 <img src="public/logo-2.png" alt="Tanenbaum logo" width="150">
 
-_Tanenbaum_ is an OCaml starter project for Advent of Code.
+_Tanenbaum_ is an OCaml starter project for [Advent of Code](https://adventofcode.com).
 
 ## Feature overview
 
