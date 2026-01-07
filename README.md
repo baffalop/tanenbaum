@@ -161,10 +161,7 @@ Once you've added your problem, you can test your solution by running it with `d
 the `--watch` flag will re-run your problem when you change your code). This will output your answer to the terminal:
 
 ```sh
-$ dune exec --watch bin/main.exe -- \
-  --year=2023 \
-  --day=1 \
-  --part=1
+$ dune exec --watch aoc -- --year 2023 --day 3 --part 1
 
 # output
 your_answer
@@ -181,11 +178,7 @@ or you can also submit your answer using the CLI via the `--submit` flag.
 > you'll end up making a lot of requests to `adventofcode.com`...
 
 ```sh
-dune exec bin/main.exe -- \
-  --year=2023 \
-  --day=1 \
-  --part=1 \
-  --submit
+dune exec aoc -- --year 2023 --day 3 --part 1 --submit
 ```
 
 Note that all the CLI options have short variants; year and day will default to
