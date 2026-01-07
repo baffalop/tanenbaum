@@ -200,6 +200,6 @@ Using the macOS clipboard utility `pbpaste`:
 pbpaste | dune exec bin/main.exe -- -y2023 -d3 --example
 ```
 
-This will be cached alongside the real puzzle input as `inputs/03-ex.txt`, so you
+This will be cached alongside the real puzzle input as `inputs/{year}/{day}-ex.txt`, so you
 can retest your solution against the puzzle input using the `--example` flag without
 needing to pipe it in again.
