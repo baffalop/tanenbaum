@@ -23,19 +23,19 @@ First, clone or fork this repo and change directories into the repo.
 
 ### Create your opam switch
 
-```bash
+```sh
 $ opam switch create . --deps-only --y
 ```
 
 ### Install developer tool dependencies
 
-```bash
+```sh
 $ opam install ocaml-lsp-server ocamlformat utop
 ```
 
 ### Validate you can build with dune
 
-```bash
+```sh
 $ dune build
 ```
 
@@ -171,7 +171,7 @@ Note that all the CLI options have short variants; year and day will default to 
 and part defaults to 1. So, a shorter example:
 
 ```sh
-dune exec aoc -- -d3 -p2
+$ dune exec aoc -- -d3 -p2
 ```
 
 ### Submitting answers
@@ -185,7 +185,7 @@ or you can also submit your answer using the CLI via the `--submit` flag.
 > you'll end up making a lot of requests to `adventofcode.com`...
 
 ```sh
-dune exec aoc -- --year 2023 --day 3 --part 1 --submit
+$ dune exec aoc -- --year 2023 --day 3 --part 1 --submit
 ```
 
 ### Testing against other inputs
@@ -197,7 +197,7 @@ in any arbitrary example input via stdin.
 Using the macOS clipboard utility `pbpaste`:
 
 ```sh
-pbpaste | dune exec bin/main.exe -- -y2023 -d3 --example
+$ pbpaste | dune exec bin/main.exe -- -y2023 -d3 --example
 ```
 
 This will be cached alongside the real puzzle input as `inputs/{year}/{day}-ex.txt`, so you
