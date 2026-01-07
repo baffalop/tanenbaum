@@ -121,10 +121,8 @@ let run_problem (module Problem : Problem.T) (run_mode : Run_mode.t)
 let find_problem (year : int) (day : int) :
     ((module Problem.T), string) result =
   match
-    List.find_opt
-      (fun (module Problem : Problem.T) ->
-        Problem.year = year && Problem.day = day)
-      Problems.All.all
+    Problems.All.all
+    |> List.find_opt (fun (module Problem : Problem.T) -> Problem.year = year && Problem.day = day)
   with
   | Some p -> Ok p
   | None -> Error (Format.sprintf "Problem (year = %d, day = %d) not implemented." year day)
