@@ -78,7 +78,7 @@ module Run_mode = struct
         in
         let content = `String (Printf.sprintf "level=%d&answer=%s" part output) in
         let@ res = Ezcurl.post ~url ~headers ~content ~params:[] () in
-        Result.ok @@ failwith "todo"
+        Result.ok res.body
 end
 
 module Options = struct
