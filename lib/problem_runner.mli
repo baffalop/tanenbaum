@@ -14,6 +14,8 @@ module Run_mode : sig
   (** Specifies the way that we'd like our problem runner to run. *)
   type t =
     | Example of { input : string option }
+        (** Indicates that we'd like to use a (shorter) example input to test the puzzle solution,
+        instead of the full input. *)
     | Test_from_puzzle_input of { credentials : Credentials.t option }
         (** Indicates that we'd like to test the puzzle solution that we're working on, without
         submitting the answer to [adventofcode.com] *)
