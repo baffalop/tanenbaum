@@ -160,14 +160,14 @@ include Problem.T;
 Once you've added your problem, you can test your solution by running it with `dune` (optionally providing
 the `--watch` flag will re-run your problem when you change your code). This will output your answer to the terminal:
 
-```shell
+```sh
 $ dune exec --watch bin/main.exe -- \
   --year=2023 \
   --day=1 \
   --part=1
 
-  # output
-  your_answer
+# output
+your_answer
 ```
 
 ### Submitting answers
@@ -180,7 +180,7 @@ or you can also submit your answer using the CLI via the `--submit` flag.
 > You'll want to disable the `--watch` flag if you have it enabled -- otherwise
 > you'll end up making a lot of requests to `adventofcode.com`...
 
-```shell
+```sh
 dune exec bin/main.exe -- \
   --year=2023 \
   --day=1 \
@@ -191,7 +191,7 @@ dune exec bin/main.exe -- \
 Note that all the CLI options have short variants; year and day will default to
 the current date, and part defaults to 1. So, a shorter example:
 
-```shell
+```sh
 dune exec bin/main.exe -- -d3 -p2 --submit
 ```
 
