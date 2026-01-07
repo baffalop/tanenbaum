@@ -74,7 +74,7 @@ module Cli = struct
       | Ok output ->
           print_endline output;
           `Ok ()
-      | Error error_msg ->`Error (false, error_msg)
+      | Error error_msg -> `Error (false, error_msg)
 
 let main () =
   let cmd_term =
