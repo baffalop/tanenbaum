@@ -188,13 +188,18 @@ dune exec bin/main.exe -- \
   --submit
 ```
 
-# Tips and tricks
-
-## Testing against other inputs
+### Testing against other inputs
 
 Advent of Code typically provides smaller inputs, in order to check that your
-code works. I tend to allow _Tanenbaum_ to download the puzzle input first, then
-I can replace the puzzle input with whatever input I'd like to test.
+code works. The CLI provides an `--example` option for this, allowing you to pipe
+in any arbitrary example input via stdin.
 
-I can then revert back to the official puzzle input by deleting the file
-(_Tanenbaum_ will download a fresh copy when I run it again).
+Using the macOS clipboard utility `pbpaste`:
+
+```shell
+pbpaste | dune exec bin/main.exe -- -y2023 -d3 --example
+```
+
+This will be cached alongside the real puzzle input as `inputs/03-ex.txt`, so you
+can retest your solution against the puzzle input using the `--example` flag without
+needing to pipe it in again.
