@@ -80,8 +80,7 @@ let main () =
   let cmd_term =
     let open Cmdliner.Term.Syntax in
     let open Terms in
-    let+ year and+ day and+ part
-    and+ example and+ submit and+ auth_token in
+    let+ year and+ day and+ part and+ example and+ submit and+ auth_token in
     run ~year ~day ~part ~example ~submit ~token:auth_token
   in
   let cmd = Cmd.make (Cmd.info "aoc") @@ Cmdliner.Term.ret cmd_term in
