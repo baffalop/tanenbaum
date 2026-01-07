@@ -196,7 +196,7 @@ in any arbitrary example input via stdin.
 
 Using the macOS clipboard utility `pbpaste`:
 
-```shell
+```sh
 pbpaste | dune exec bin/main.exe -- -y2023 -d3 --example
 ```
 
