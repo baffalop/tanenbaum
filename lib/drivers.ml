@@ -40,21 +40,26 @@ module Cli = struct
       Arg.(value & flag & info [ "submit"; "s" ] ~docv:"SUBMIT" ~doc)
   end
 
+  let resolve_date ~year ~day =
+    let time = lazy(Unix.localtime @@ Unix.time ()) in
+    let year = match year with
+      | Some year -> year
+      | None -> (Lazy.force time).tm_year + 1900
+    in
+    let@ day = match day with
+      | Some day -> Ok day
+      | None ->
+        let time = Lazy.force time in
+        if time.tm_mon != 11 then Error "Must specify --day if current date is not December"
+        else Ok time.tm_mday
+    in
+    Ok (year, day)
+
   let run ~(year : int option) ~(day : int option) ~(part : int)
       ~example:(example : bool) ~submit:(submit : bool)
       ~token:(auth_token : string option) : unit Cmdliner.Term.ret =
       let output : (string, string) result =
-        let@ (year, day) = match year, day with
-          | Some year, Some day -> Ok (year, day)
-          | _, _ ->
-            let time = Unix.localtime @@ Unix.time () in
-            let year = Option.value year ~default:(time.tm_year + 1900) in
-            match day with
-            | Some day -> Ok (year, day)
-            | None ->
-              if time.tm_mon != 11 then Error "Must specify --day if current date is not December"
-              else Ok (year, time.tm_mday)
-        in
+        let@ (year, day) = resolve_date ~year ~day in
         let@ run_mode : Problem_runner.Run_mode.t =
           match (auth_token, submit, example) with
           | _, true, true ->
