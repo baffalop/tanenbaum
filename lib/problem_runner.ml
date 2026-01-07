@@ -1,12 +1,16 @@
 open Import
 
-module Credentials = struct
+module Credentials: sig
+  type t
+
+  val of_auth_token : string -> t
+  val to_headers : t -> (string * string) list
+end = struct
   type t = string
 
   let of_auth_token (x : string) : t = x
 
-  let to_headers (t : t) : (string * string) list =
-    [ ("Cookie", "session=" ^ t) ]
+  let to_headers (t : t) : (string * string) list = [ ("Cookie", "session=" ^ t) ]
 end
 
 module Run_mode = struct
@@ -28,44 +32,26 @@ module Run_mode = struct
   let get_puzzle_input (year : int) (day : int)
       (credentials : Credentials.t option) : (string, string) result =
     (* Create cache directory structure *)
-    let () =
-      if not (Sys.file_exists "inputs") then Sys.mkdir "inputs" 0o777 else ()
-    in
+    if not (Sys.file_exists "inputs") then Sys.mkdir "inputs" 0o777;
     let year_dir = Filename.concat "inputs" @@ string_of_int year in
-    let () =
-      if not (Sys.file_exists year_dir) then Sys.mkdir year_dir 0o777 else ()
-    in
+    if not (Sys.file_exists year_dir) then Sys.mkdir year_dir 0o777;
 
     (* Check if cached input exists *)
-    let filename =
-      Filename.concat year_dir @@ Format.sprintf "%02d.txt" day
-    in
+    let filename = Filename.concat year_dir @@ Format.sprintf "%02d.txt" day in
     if Sys.file_exists filename then Ok (read_file filename)
-      (* If not, fetch it from adventofcode.com *)
+    (* If not, fetch it from adventofcode.com *)
     else
       match credentials with
       | None ->
           Error "Cannot fetch input from adventofcode.com: missing credentials."
       | Some credentials ->
-          Result.map_error Piaf.Error.to_string
-          @@ Eio_main.run
-          @@ fun env ->
-          Eio.Switch.run
-          @@ fun sw ->
-          let uri =
-            Uri.of_string
-            @@ String.concat "/"
-                 [
-                   "https://adventofcode.com";
-                   string_of_int year;
-                   "day";
-                   string_of_int day;
-                   "input";
-                 ]
-          in
+          Result.map_error (fun (code, msg) ->
+            Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
+          @@ Eio_main.run @@ fun env ->
+          Eio.Switch.run @@ fun sw ->
+          let url = Printf.sprintf "https://adventofcode.com/%d/day/%d/input" year day in
           let headers = Credentials.to_headers credentials in
-          let@ response = Piaf.Client.Oneshot.get ~sw env ~headers uri in
-          let@ body = Piaf.Body.to_string response.body in
+          let@ { body } = Ezcurl.get ~url ~headers () in
           write_file filename body;
           Result.ok body
 
@@ -80,32 +66,19 @@ module Run_mode = struct
     match run_mode with
     | Test_from_puzzle_input _ -> Ok None
     | Submit { credentials } ->
-        Result.map_error Piaf.Error.to_string
+        Result.map_error (fun (code, msg) ->
+          Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
         @@ Eio_main.run
         @@ fun env ->
         Eio.Switch.run
         @@ fun sw ->
-        let uri =
-          Uri.of_string
-          @@ String.concat "/"
-               [
-                 "https://adventofcode.com";
-                 string_of_int year;
-                 "day";
-                 string_of_int day;
-                 "answer";
-               ]
+        let url = Printf.sprintf "https://adventofcode.com/%d/day/%d/answer" year day in
+        let headers = Credentials.to_headers credentials
+          @ [ ("Content-Type", "application/x-www-form-urlencoded") ]
         in
-        let headers = Credentials.to_headers credentials in
-        let headers =
-          headers @ [ ("Content-Type", "application/x-www-form-urlencoded") ]
-        in
-        let body =
-          Piaf.Body.of_string @@ Fmt.(str "level=%d&answer=%s" part output)
-        in
-        let@ response = Piaf.Client.Oneshot.post ~sw env ~headers ~body uri in
-        let@ body = Piaf.Body.to_string response.body in
-        Result.ok (Some body)
+        let content = `String (Printf.sprintf "level=%d&answer=%s" part output) in
+        let@ res = Ezcurl.post ~url ~headers ~content ~params:[] () in
+        Result.ok res.body
 end
 
 module Options = struct
@@ -136,10 +109,7 @@ let find_problem (year : int) (day : int) :
       Problems.All.all
   with
   | Some p -> Ok p
-  | None ->
-      Error
-        (Format.sprintf "Problem (year = %d, day = %d) not implemented."
-           year day)
+  | None -> Error (Format.sprintf "Problem (year = %d, day = %d) not implemented." year day)
 
 let run (options : Options.t) : (string, string) result =
   let@ problem = find_problem options.year options.day in
