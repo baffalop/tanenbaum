@@ -167,6 +167,13 @@ $ dune exec --watch aoc -- --year 2023 --day 3 --part 1
 your_answer
 ```
 
+Note that all the CLI options have short variants; year and day will default to the current date,
+and part defaults to 1. So, a shorter example:
+
+```sh
+dune exec aoc -- -d3 -p2
+```
+
 ### Submitting answers
 
 Once you're convinced that your problem produces the correct output, you can
@@ -179,13 +186,6 @@ or you can also submit your answer using the CLI via the `--submit` flag.
 
 ```sh
 dune exec aoc -- --year 2023 --day 3 --part 1 --submit
-```
-
-Note that all the CLI options have short variants; year and day will default to
-the current date, and part defaults to 1. So, a shorter example:
-
-```sh
-dune exec bin/main.exe -- -d3 -p2 --submit
 ```
 
 ### Testing against other inputs
