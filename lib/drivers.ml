@@ -62,10 +62,8 @@ module Cli = struct
         let@ (year, day) = resolve_date ~year ~day in
         let@ run_mode : Problem_runner.Run_mode.t =
           match (auth_token, submit, example) with
-          | _, true, true ->
-              Error {|Cannot use --example and --submit together|}
-          | None, true, _ ->
-              Error {|Must provide AUTH_TOKEN when using --submit|}
+          | _, true, true -> Error {|Cannot use --example and --submit together|}
+          | None, true, _ -> Error {|Must provide AUTH_TOKEN when using --submit|}
           | _, _, true ->
             let input =
               (* It's a tty when no input is piped *)
