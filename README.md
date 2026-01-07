@@ -188,6 +188,13 @@ dune exec bin/main.exe -- \
   --submit
 ```
 
+Note that all the CLI options have short variants; year and day will default to
+the current date, and part defaults to 1. So, a shorter example:
+
+```shell
+dune exec bin/main.exe -- -d3 -p2 --submit
+```
+
 ### Testing against other inputs
 
 Advent of Code typically provides smaller inputs, in order to check that your
