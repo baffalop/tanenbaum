@@ -139,7 +139,7 @@ module Part_2 = {
 > information about which parts of your code are unused and can therefore be
 > cleaned up:
 
-### OCaml
+#### OCaml
 
 `lib/problems/problem_2023_01.mli`:
 
@@ -147,7 +147,7 @@ module Part_2 = {
 include Problem.T
 ```
 
-### ReasonML
+#### ReasonML
 
 `lib/problems/problem_2023_01.rei`:
 
