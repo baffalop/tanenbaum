@@ -72,7 +72,7 @@ module Run_mode = struct
           Printf.printf "Got input; wrote to %s\n" filename;
           Result.ok body
 
-  let get_input (year : int) (day : int) : t -> (string, string) result =
+  let get_input ~(year : int) ~(day : int) : t -> (string, string) result =
     function
     | Example { input } -> get_example_input ~year ~day input
     | Test_from_puzzle_input { credentials } ->
@@ -105,7 +105,7 @@ end
 
 let run_problem (module Problem : Problem.T) (run_mode : Run_mode.t)
     (year : int) (day : int) (part : int) : (string, string) result =
-  let@ input = Run_mode.get_input year day run_mode in
+  let@ input = Run_mode.get_input ~year ~day run_mode in
   let@ result =
     match part with
     | 1 -> Problem.Part_1.run input
