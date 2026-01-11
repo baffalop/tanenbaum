@@ -17,10 +17,13 @@ module Cache : sig
   type t
 
   val init : year:int -> basename:string -> t
+
   val exists : t -> bool
   val read : t -> string
   val write : t -> string -> unit
   val path : t -> string
+
+  val on_input : string option -> t -> string option
 end = struct
   type t = { filename : string }
 
@@ -42,6 +45,16 @@ end = struct
     output_string ch contents
 
   let path ({ filename } : t) = filename
+
+  let on_input (input : string option) (cache : t) =
+    match input with
+    | Some input -> (
+      write cache input;
+      Some input
+    )
+    | None ->
+      if exists cache then Some (read cache)
+      else None
 end
 
 module Run_mode = struct
@@ -50,16 +63,11 @@ module Run_mode = struct
     | Test_from_puzzle_input of { credentials : Credentials.t option }
     | Submit of { credentials : Credentials.t }
 
-  let get_example_input ~year:(year : int) ~day:(day : int) (input : string option) : (string, string) result =
-    let cache = Cache.init ~year ~basename:(Format.sprintf "%02d-ex" day) in
-    match input with
-    | Some input -> (
-      Cache.write cache input;
-      Ok input
-    )
-    | None ->
-      if Cache.exists cache then Ok (Cache.read cache)
-      else Error "No example input in cache: please pass in via stdin"
+  let get_example_input ~year:(year : int) ~day:(day : int)
+      (input : string option) : (string, string) result =
+    Cache.init ~year ~basename:(Format.sprintf "%02d-ex" day)
+    |> Cache.on_input input
+    |> Option.to_result ~none:"No example input in cache: please pass in via stdin"
 
   let get_puzzle_input (year : int) (day : int)
       (credentials : Credentials.t option) : (string, string) result =
