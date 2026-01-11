@@ -1,6 +1,6 @@
 open Import
 
-module Credentials: sig
+module Credentials : sig
   type t
 
   val of_auth_token : string -> t
@@ -13,64 +13,72 @@ end = struct
   let to_headers (t : t) : (string * string) list = [ ("Cookie", "session=" ^ t) ]
 end
 
+module Cache : sig
+  type t
+
+  val init : year:int -> basename:string -> t
+  val exists : t -> bool
+  val read : t -> string
+  val write : t -> string -> unit
+  val path : t -> string
+end = struct
+  type t = { filename : string }
+
+  let init ~(year : int) ~(basename : string) : t =
+    if not (Sys.file_exists "inputs") then Sys.mkdir "inputs" 0o777;
+    let year_dir = Filename.concat "inputs" @@ string_of_int year in
+    if not (Sys.file_exists year_dir) then Sys.mkdir year_dir 0o777;
+    let filename = Filename.concat year_dir @@ basename ^ ".txt" in
+    { filename }
+
+  let exists ({ filename } : t) = Sys.file_exists filename
+
+  let read ({ filename } : t) =
+    In_channel.with_open_text filename @@ fun ch ->
+    really_input_string ch (in_channel_length ch)
+
+  let write ({ filename } : t) (contents : string) =
+    Out_channel.with_open_bin filename @@ fun ch ->
+    output_string ch contents
+
+  let path ({ filename } : t) = filename
+end
+
 module Run_mode = struct
   type t =
     | Example of { input : string option }
     | Test_from_puzzle_input of { credentials : Credentials.t option }
     | Submit of { credentials : Credentials.t }
 
-  let read_file (filename : string) : string =
-    let ch = open_in_bin filename in
-    let s = really_input_string ch (in_channel_length ch) in
-    close_in ch;
-    s
-
-  let write_file (filename : string) (contents : string) : unit =
-    let ch = open_out_bin filename in
-    let () = output_string ch contents in
-    close_out ch
-
-  let init_cache (year : int) : string =
-    if not (Sys.file_exists "inputs") then Sys.mkdir "inputs" 0o777;
-    let year_dir = Filename.concat "inputs" @@ string_of_int year in
-    if not (Sys.file_exists year_dir) then Sys.mkdir year_dir 0o777;
-    year_dir
-
   let get_example_input ~year:(year : int) ~day:(day : int) (input : string option) : (string, string) result =
-    let year_dir = init_cache year in
-    let filename = Filename.concat year_dir @@ Format.sprintf "%02d-ex.txt" day in
+    let cache = Cache.init ~year ~basename:(Format.sprintf "%02d-ex" day) in
     match input with
     | Some input -> (
-      write_file filename input;
+      Cache.write cache input;
       Ok input
     )
     | None ->
-      if Sys.file_exists filename then Ok (read_file filename)
+      if Cache.exists cache then Ok (Cache.read cache)
       else Error "No example input in cache: please pass in via stdin"
 
   let get_puzzle_input (year : int) (day : int)
       (credentials : Credentials.t option) : (string, string) result =
-    (* Create cache directory structure *)
-    let year_dir = init_cache year in
-    (* Check if cached input exists *)
-    let filename = Filename.concat year_dir @@ Format.sprintf "%02d.txt" day in
-    if Sys.file_exists filename then Ok (read_file filename)
-    (* If not, fetch it from adventofcode.com *)
-    else
-      match credentials with
-      | None ->
-          Error "Cannot fetch input from adventofcode.com: missing credentials."
-      | Some credentials ->
-          Result.map_error (fun (code, msg) ->
-            Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
-          @@ Eio_main.run @@ fun env ->
-          Eio.Switch.run @@ fun sw ->
-          let url = Printf.sprintf "https://adventofcode.com/%d/day/%d/input" year day in
-          let headers = Credentials.to_headers credentials in
-          let@ { body } = Ezcurl.get ~url ~headers () in
-          write_file filename body;
-          Printf.printf "Got input; wrote to %s\n" filename;
-          Result.ok body
+    let cache = Cache.init ~year ~basename:(Format.sprintf "%02d" day) in
+    if Cache.exists cache then Ok (Cache.read cache)
+    else match credentials with
+    | None ->
+        Error "Cannot fetch input from adventofcode.com: missing credentials."
+    | Some credentials ->
+        Result.map_error (fun (code, msg) ->
+          Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
+        @@ Eio_main.run @@ fun env ->
+        Eio.Switch.run @@ fun sw ->
+        let url = Printf.sprintf "https://adventofcode.com/%d/day/%d/input" year day in
+        let headers = Credentials.to_headers credentials in
+        let@ { body } = Ezcurl.get ~url ~headers () in
+        Cache.write cache body;
+        Printf.printf "Got input; wrote to %s\n" @@ Cache.path cache;
+        Result.ok body
 
   let get_input ~(year : int) ~(day : int) : t -> (string, string) result =
     function
