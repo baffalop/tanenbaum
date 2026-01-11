@@ -13,15 +13,15 @@ end
 module Run_mode : sig
   (** Specifies the way that we'd like our problem runner to run. *)
   type t =
-    | Example of { input : string option }
-        (** Indicates that we'd like to use a (shorter) example input to test the puzzle solution,
-        instead of the full input. *)
+    (** Indicates that we'd like to use a (shorter) example input to test the puzzle solution,
+    instead of the full input. *)
+    | Example
+    (** Indicates that we'd like to test the puzzle solution that we're working on, without
+    submitting the answer to [adventofcode.com] *)
     | Test_from_puzzle_input of { credentials : Credentials.t option }
-        (** Indicates that we'd like to test the puzzle solution that we're working on, without
-        submitting the answer to [adventofcode.com] *)
+    (** Indicates that we'd like to run a puzzle solution, and if successful, submit the answer to
+    [adventofcode.com] *)
     | Submit of { credentials : Credentials.t }
-        (** Indicates that we'd like to run a puzzle solution, and if successful, submit the answer to
-        [adventofcode.com] *)
 end
 
 (** Fully configures an invocation of [run]. *)

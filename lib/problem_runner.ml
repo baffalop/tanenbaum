@@ -59,15 +59,33 @@ end
 
 module Run_mode = struct
   type t =
-    | Example of { input : string option }
+    | Example
     | Test_from_puzzle_input of { credentials : Credentials.t option }
     | Submit of { credentials : Credentials.t }
 
-  let get_example_input ~year:(year : int) ~day:(day : int)
-      (input : string option) : (string, string) result =
-    Cache.init ~year ~basename:(Format.sprintf "%02d-ex" day)
-    |> Cache.on_input input
-    |> Option.to_result ~none:"No example input in cache: please pass in via stdin"
+  let get_example_input ~year:(year : int) ~day:(day : int) : (string, string) result =
+    let cache = Cache.init ~year ~basename:(Format.sprintf "%02d-ex" day) in
+    let input =
+      (* It's a tty when no input is piped *)
+      if Unix.isatty Unix.stdin then None
+      else Some (In_channel.input_all In_channel.stdin)
+    in
+    match Cache.on_input input cache with
+    | Some input -> (
+      Printf.printf "Using input from stdin; wrote to %s\n" @@ Cache.path cache;
+      Ok input
+    )
+    | None ->
+      (* No input was piped in, and none exists in cache *)
+      print_endline "No cached example input. Paste now, followed by <ctrl-D>; or <ctrl-C> to cancel...";
+      let input = In_channel.input_all In_channel.stdin in
+      if input = "" then Error "No input provided. Cancelled."
+      else (
+        Cache.write cache input;
+        Printf.printf "\nGot input; wrote to %s\n" @@ Cache.path cache;
+        flush_all ();
+        Ok input
+      )
 
   let get_puzzle_input (year : int) (day : int)
       (credentials : Credentials.t option) : (string, string) result =
@@ -90,15 +108,14 @@ module Run_mode = struct
 
   let get_input ~(year : int) ~(day : int) : t -> (string, string) result =
     function
-    | Example { input } -> get_example_input ~year ~day input
-    | Test_from_puzzle_input { credentials } ->
-        get_puzzle_input year day credentials
+    | Example -> get_example_input ~year ~day
+    | Test_from_puzzle_input { credentials } -> get_puzzle_input year day credentials
     | Submit { credentials } -> get_puzzle_input year day (Some credentials)
 
   let cleanup (year : int) (day : int) (part : int) (output : string)
       (run_mode : t) : (string option, string) result =
     match run_mode with
-    | Test_from_puzzle_input _ | Example _ -> Ok None
+    | Test_from_puzzle_input _ | Example -> Ok None
     | Submit { credentials } ->
         Result.map_error (fun (code, msg) ->
           Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)

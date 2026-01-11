@@ -65,12 +65,7 @@ module Cli = struct
           | _, true, true -> Error {|Cannot use --example and --submit together|}
           | None, true, _ -> Error {|Must provide AUTH_TOKEN when using --submit|}
           | _, _, true ->
-            let input =
-              (* It's a tty when no input is piped *)
-              if Unix.isatty Unix.stdin then None
-              else Some (In_channel.input_all In_channel.stdin)
-            in
-            Result.ok @@ Problem_runner.Run_mode.Example { input }
+            Result.ok Problem_runner.Run_mode.Example
           | token, false, _ ->
             Result.ok @@ Problem_runner.Run_mode.Test_from_puzzle_input {
               credentials = Option.map Problem_runner.Credentials.of_auth_token token;
