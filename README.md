@@ -69,17 +69,13 @@ export AUTH_TOKEN="5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 > [!TIP]
-> If you don't want to configure authentication, you will manually need to create your input directories and files.
-> This can be done by creating the following directory structure from the project root:
+> If you don't want to configure authentication, you can instead paste your input directly into the terminal, following the prompt:
 >
-> ```shell
-> $ mkdir inputs/{year}/{day}.txt
 > ```
->
-> where Day 01 of 2023 would look like:
->
-> ```shell
-> $ mkdir inputs/2023/01.txt
+> Cannot fetch input from adventofcode.com: missing credentials.. You can paste it now, followed by <ctrl-D>; or <ctrl-C> to cancel...
+> 123
+> 456^D
+> Got input; wrote to inputs/2024/03.txt
 > ```
 
 ## Working on problems
