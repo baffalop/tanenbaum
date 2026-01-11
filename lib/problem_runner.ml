@@ -63,10 +63,22 @@ module Run_mode = struct
     | Test_from_puzzle_input of { credentials : Credentials.t option }
     | Submit of { credentials : Credentials.t }
 
+  let prompt_for_input ~(cache : Cache.t) ~(warning_message : string) : (string, string) result =
+    Printf.printf "%s. You can paste it now, followed by <ctrl-D>; or <ctrl-C> to cancel...\n" warning_message;
+    flush_all ();
+    let input = In_channel.input_all In_channel.stdin in
+    if input = "" then Error "No input provided. Cancelled."
+    else (
+      Cache.write cache input;
+      Printf.printf "\nGot input; wrote to %s\n" @@ Cache.path cache;
+      flush_all ();
+      Ok input
+    )
+
   let get_example_input ~year:(year : int) ~day:(day : int) : (string, string) result =
     let cache = Cache.init ~year ~basename:(Format.sprintf "%02d-ex" day) in
     let input =
-      (* It's a tty when no input is piped *)
+      (* Example input can be provided by piping it in. `isatty` is false when input is piped *)
       if Unix.isatty Unix.stdin then None
       else Some (In_channel.input_all In_channel.stdin)
     in
@@ -77,15 +89,7 @@ module Run_mode = struct
     )
     | None ->
       (* No input was piped in, and none exists in cache *)
-      print_endline "No cached example input. Paste now, followed by <ctrl-D>; or <ctrl-C> to cancel...";
-      let input = In_channel.input_all In_channel.stdin in
-      if input = "" then Error "No input provided. Cancelled."
-      else (
-        Cache.write cache input;
-        Printf.printf "\nGot input; wrote to %s\n" @@ Cache.path cache;
-        flush_all ();
-        Ok input
-      )
+      prompt_for_input ~cache ~warning_message:"No cached example input for this day"
 
   let get_puzzle_input (year : int) (day : int)
       (credentials : Credentials.t option) : (string, string) result =
@@ -93,10 +97,9 @@ module Run_mode = struct
     if Cache.exists cache then Ok (Cache.read cache)
     else match credentials with
     | None ->
-        Error "Cannot fetch input from adventofcode.com: missing credentials."
+        prompt_for_input ~cache ~warning_message:"Cannot fetch input from adventofcode.com: missing credentials."
     | Some credentials ->
-        Result.map_error (fun (code, msg) ->
-          Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
+        Result.map_error (fun (code, msg) -> Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
         @@ Eio_main.run @@ fun env ->
         Eio.Switch.run @@ fun sw ->
         let url = Printf.sprintf "https://adventofcode.com/%d/day/%d/input" year day in
