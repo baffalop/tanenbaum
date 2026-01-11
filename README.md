@@ -23,19 +23,19 @@ First, clone or fork this repo and change directories into the repo.
 
 ### Create your opam switch
 
-```bash
+```sh
 $ opam switch create . --deps-only --y
 ```
 
 ### Install developer tool dependencies
 
-```bash
+```sh
 $ opam install ocaml-lsp-server ocamlformat utop
 ```
 
 ### Validate you can build with dune
 
-```bash
+```sh
 $ dune build
 ```
 
@@ -69,17 +69,13 @@ export AUTH_TOKEN="5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 > [!TIP]
-> If you don't want to configure authentication, you will manually need to create your input directories and files.
-> This can be done by creating the following directory structure from the project root:
+> If you don't want to configure authentication, you can instead paste your input directly into the terminal, following the prompt:
 >
-> ```shell
-> $ mkdir inputs/{year}/{day}.txt
 > ```
->
-> where Day 01 of 2023 would look like:
->
-> ```shell
-> $ mkdir inputs/2023/01.txt
+> Cannot fetch input from adventofcode.com: missing credentials.. You can paste it now, followed by <ctrl-D>; or <ctrl-C> to cancel...
+> 123
+> 456^D
+> Got input; wrote to inputs/2024/03.txt
 > ```
 
 ## Working on problems
@@ -139,7 +135,7 @@ module Part_2 = {
 > information about which parts of your code are unused and can therefore be
 > cleaned up:
 
-### OCaml
+#### OCaml
 
 `lib/problems/problem_2023_01.mli`:
 
@@ -147,7 +143,7 @@ module Part_2 = {
 include Problem.T
 ```
 
-### ReasonML
+#### ReasonML
 
 `lib/problems/problem_2023_01.rei`:
 
@@ -160,14 +156,18 @@ include Problem.T;
 Once you've added your problem, you can test your solution by running it with `dune` (optionally providing
 the `--watch` flag will re-run your problem when you change your code). This will output your answer to the terminal:
 
-```shell
-$ dune exec --watch bin/main.exe -- \
-  --year=2023 \
-  --day=1 \
-  --part=1
+```sh
+$ dune exec --watch aoc -- --year 2023 --day 3 --part 1
 
-  # output
-  your_answer
+# output
+your_answer
+```
+
+Note that all the CLI options have short variants; year and day will default to the current date,
+and part defaults to 1. So, a shorter example:
+
+```sh
+$ dune exec aoc -- -d3 -p2
 ```
 
 ### Submitting answers
@@ -180,21 +180,22 @@ or you can also submit your answer using the CLI via the `--submit` flag.
 > You'll want to disable the `--watch` flag if you have it enabled -- otherwise
 > you'll end up making a lot of requests to `adventofcode.com`...
 
-```shell
-dune exec bin/main.exe -- \
-  --year=2023 \
-  --day=1 \
-  --part=1 \
-  --submit
+```sh
+$ dune exec aoc -- --year 2023 --day 3 --part 1 --submit
 ```
 
-# Tips and tricks
-
-## Testing against other inputs
+### Testing against other inputs
 
 Advent of Code typically provides smaller inputs, in order to check that your
-code works. I tend to allow _Tanenbaum_ to download the puzzle input first, then
-I can replace the puzzle input with whatever input I'd like to test.
+code works. The CLI provides an `--example` option for this, allowing you to pipe
+in any arbitrary example input via stdin.
 
-I can then revert back to the official puzzle input by deleting the file
-(_Tanenbaum_ will download a fresh copy when I run it again).
+Using the macOS clipboard utility `pbpaste`:
+
+```sh
+$ pbpaste | dune exec aoc -- -y2023 -d3 --example
+```
+
+This will be cached alongside the real puzzle input as `inputs/{year}/{day}-ex.txt`, so you
+can retest your solution against the puzzle input using the `--example` flag without
+needing to pipe it in again.

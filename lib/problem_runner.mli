@@ -1,11 +1,11 @@
-(** Credentials are used to authenticate with [adventofcode.com], to automate some slightly 
+(** Credentials are used to authenticate with [adventofcode.com], to automate some slightly
     annoying things that you need to do when working on puzzle solutions. *)
 module Credentials : sig
   type t
   (** A complete set of credentials used to authenticate with [adventofcode.com]. *)
 
   val of_auth_token : string -> t
-  (** [of_auth_token session_token] constructs a [t] from the session token issued by 
+  (** [of_auth_token session_token] constructs a [t] from the session token issued by
       [adventofcode.com]. *)
 end
 
@@ -13,12 +13,15 @@ end
 module Run_mode : sig
   (** Specifies the way that we'd like our problem runner to run. *)
   type t =
+    (** Indicates that we'd like to use a (shorter) example input to test the puzzle solution,
+    instead of the full input. *)
+    | Example
+    (** Indicates that we'd like to test the puzzle solution that we're working on, without
+    submitting the answer to [adventofcode.com] *)
     | Test_from_puzzle_input of { credentials : Credentials.t option }
-        (** Indicates that we'd like to test the puzzle solution that we're working on, without 
-        submitting the answer to [adventofcode.com] *)
+    (** Indicates that we'd like to run a puzzle solution, and if successful, submit the answer to
+    [adventofcode.com] *)
     | Submit of { credentials : Credentials.t }
-        (** Indicates that we'd like to run a puzzle solution, and if successful, submit the answer to
-        [adventofcode.com] *)
 end
 
 (** Fully configures an invocation of [run]. *)
@@ -37,7 +40,7 @@ module Options : sig
 end
 
 val run : Options.t -> (string, string) result
-(** [run options] runs a puzzle solution, configured by [options]. 
+(** [run options] runs a puzzle solution, configured by [options].
 
     This may return [Error] for a number of reasons -- the returned [string] should indicate what
     went wrong. *)
