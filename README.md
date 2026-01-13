@@ -72,7 +72,7 @@ export AUTH_TOKEN="5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 > If you don't want to configure authentication, you can instead paste your input directly into the terminal, following the prompt:
 >
 > ```
-> Cannot fetch input from adventofcode.com: missing credentials.. You can paste it now, followed by <ctrl-D>; or <ctrl-C> to cancel...
+> Cannot fetch input from adventofcode.com: missing credentials. You can paste it now, followed by <ctrl-D>; or <ctrl-C> to cancel...
 > 123
 > 456^D
 > Got input; wrote to inputs/2024/03.txt

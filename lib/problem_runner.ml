@@ -97,7 +97,7 @@ module Run_mode = struct
     if Cache.exists cache then Ok (Cache.read cache)
     else match credentials with
     | None ->
-        prompt_for_input ~cache ~warning_message:"Cannot fetch input from adventofcode.com: missing credentials."
+        prompt_for_input ~cache ~warning_message:"Cannot fetch input from adventofcode.com: missing credentials"
     | Some credentials ->
         Result.map_error (fun (code, msg) -> Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
         @@ Eio_main.run @@ fun env ->
