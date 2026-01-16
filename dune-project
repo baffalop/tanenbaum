@@ -6,15 +6,15 @@
 (generate_opam_files true)
 
 (source
- (github sixstring982/tanenbaum))
+ (github baffalop/tanenbaum))
 
-(authors "Sixstring982")
+(authors "Sixstring982" "baffalop")
 
-(maintainers "Sixstring982")
+(maintainers "Sixstring982" "baffalop")
 
 (license BSD-3-Clause)
 
-(documentation https://sixstring982.github.io/tanenbaum)
+(documentation https://github.com/baffalop/tanenbaum)
 
 (package
  (name tanenbaum)
